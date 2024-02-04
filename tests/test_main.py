@@ -14,14 +14,14 @@ def test_translate_language_not_found():
     assert response.json() == {"detail": "Language not available"}
 
 def test_translate_word_not_found():
-    response = client.get("/translate/french/nonexistentword123")
+    response = client.get("/translate/fr/nonexistentword123")
     assert response.status_code == 404
     assert response.json() == {"detail": "Translation not found"}
 
 def test_valid_translation():
-    response = client.get("/translate/french/abdominales")
+    response = client.get("/translate/fr/abdominales")
     assert response.status_code == 200
-    assert response.json() == {"language": "french", "word": "abdominales", "ipa_translation": "/ab.dɔ.mi.nal/"}
+    assert response.json() == {"language": "fr", "word": "abdominales", "ipa_translation": "/ab.dɔ.mi.nal/"}
 
 
     
