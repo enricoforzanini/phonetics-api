@@ -5,10 +5,10 @@ on:
     branches: [ main ]
 
 env:
-  AWS_REGION: eu-north-1                   # Set this to your preferred AWS region
-  ECR_REPOSITORY: phonetics-api            # Set this to your Amazon ECR repository name
-  IMAGE_TAG: ${{ github.sha }}             # Tag the image with the git commit SHA
-  CONTAINER_NAME: phonetics-api            # Set this to the name of your Docker container
+  AWS_REGION: eu-north-1
+  ECR_REPOSITORY: phonetics-api
+  IMAGE_TAG: ${{ github.sha }}
+  CONTAINER_NAME: phonetics-api
 
 jobs:
   deploy:
@@ -19,7 +19,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
