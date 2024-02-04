@@ -29,7 +29,7 @@ def read_root():
             "translate_word": "/translate/fr/famille",
             "supported_languages": "/languages"
         },
-        "contact": "For more information, visit the [GitHub Repo](https://github.com/EnricoFo/phonetics-api)"
+        "contact": "For more information, visit the [GitHub Repo](https://github.com/enricoforzanini/phonetics-api)"
     }
 
 @app.get("/translate/{language}/{word}")
