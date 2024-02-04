@@ -3,10 +3,34 @@ from app import data_loader
 
 translations = data_loader.load_translations()
 
+app = FastAPI(
+    title="Phonetics API",
+    summary="Phonetics API to get the IPA translation of words in different languages.",
+)
+
 app = FastAPI()
 
 def convert_to_ipa(language, word):
     return translations[language].get(word)
+
+@app.get("/")
+def read_root():
+    return {
+        "message": "Welcome to the Phonetics API",
+        "endpoints": {
+            "translate_word": "/translate/{language}/{word}",
+            "supported_languages": "/languages",
+            "documentation": {
+                "Swagger UI": "/docs",
+                "ReDoc": "/redoc"
+            }
+        },
+        "example_usage": {
+            "translate_word": "/translate/fr/famille",
+            "supported_languages": "/languages"
+        },
+        "contact": "For more information, visit the [GitHub Repo](https://github.com/EnricoFo/phonetics-api)"
+    }
 
 @app.get("/translate/{language}/{word}")
 def translate_text(language: str, word: str):
