@@ -1,7 +1,7 @@
 name: Deploy to Amazon EC2
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
 
 env:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -55,8 +55,6 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_ENV
 
-          
-      
       - name: SSH and Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
@@ -85,4 +83,6 @@ jobs:
               --log-opt awslogs-group=log-phonetics \
               --log-opt awslogs-create-group=true \
               --name $CONTAINER_NAME -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+            echo "Clean up"
+            sudo docker system prune -af
 
