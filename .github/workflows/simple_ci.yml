@@ -63,7 +63,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_NAME
+          envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_NAME,AWS_REGION
           script: |
             sudo apt-get update
             sudo apt-get install docker.io -y
@@ -79,5 +79,10 @@ jobs:
             sudo docker rm $CONTAINER_NAME || true
             echo "Running new container..."
             echo ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-            sudo docker run -d --name $CONTAINER_NAME -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+            sudo docker run \
+              --log-driver=awslogs \
+              --log-opt awslogs-region=${AWS_REGION} \
+              --log-opt awslogs-group=log-phonetics \
+              --log-opt awslogs-create-group=true \
+              --name $CONTAINER_NAME -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
 

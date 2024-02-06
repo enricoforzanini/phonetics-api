@@ -5,7 +5,7 @@ client = TestClient(main.app)
 
 def test_catch_all():
     response = client.get("/test/random/path")
-    assert response.status_code == 200
+    assert response.status_code == 404
     assert response.json() == {"detail": "Endpoint not found. Please check the URL."}
 
 def test_translate_language_not_found():

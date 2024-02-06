@@ -1,5 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from loguru import logger
 from app import data_loader
+import sys
+
+logger.remove()
+logger.level("INFO")
+logger.add(sys.stdout, format="{time} {level} {message}")
 
 translations = data_loader.load_translations()
 
@@ -10,8 +18,36 @@ app = FastAPI(
 
 app = FastAPI()
 
+main_app_lifespan = app.router.lifespan_context # from https://stackoverflow.com/a/77364729
+
+@asynccontextmanager 
+async def lifespan(app: FastAPI):
+    logger.info("Application startup")
+    async with main_app_lifespan(app) as state:
+        yield state
+    logger.info("Application shutdown")
+
+app.router.lifespan_context = lifespan
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    logger.info(f"Request: {request.method} {request.url} {response.status_code}")
+    return response
+
+@app.exception_handler(HTTPException)
+async def log_http_exceptions(request: Request, exception: HTTPException):
+    logger.error(f"HTTP error: {exception.detail}")
+    return JSONResponse(status_code=exception.status_code, content={"detail": exception.detail})
+
+
 def convert_to_ipa(language, word):
-    return translations[language].get(word)
+    translation = translations[language].get(word)
+    if translation:
+        logger.info(f"Translation found for {language}/{word}: {translation}")
+    else:
+        logger.warning(f"No translation found for {language}/{word}")
+    return translation
 
 @app.get("/")
 def read_root():
@@ -50,4 +86,4 @@ def get_supported_languages():
 
 @app.get("/{path:path}")
 def catch_all(path: str):
-    return {"detail": "Endpoint not found. Please check the URL."}
+    raise HTTPException(status_code=404, detail="Endpoint not found. Please check the URL.")
