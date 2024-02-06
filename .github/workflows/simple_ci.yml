@@ -79,7 +79,7 @@ jobs:
             sudo docker rm $CONTAINER_NAME || true
             echo "Running new container..."
             echo ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-            sudo docker run \
+            sudo docker run -d \
               --log-driver=awslogs \
               --log-opt awslogs-region=${AWS_REGION} \
               --log-opt awslogs-group=log-phonetics \
