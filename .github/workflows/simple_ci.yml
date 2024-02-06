@@ -1,7 +1,7 @@
 name: Deploy to Amazon EC2
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
 
 env:
@@ -11,8 +11,8 @@ env:
   CONTAINER_NAME: phonetics-api
 
 jobs:
-  deploy:
-    name: Deploy
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -37,6 +37,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'eu-north-1'
 
+
+  deploy:
+    name: Deploy to Amazon EC2
+    needs: test
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
         with:
@@ -85,4 +89,6 @@ jobs:
               --log-opt awslogs-group=log-phonetics \
               --log-opt awslogs-create-group=true \
               --name $CONTAINER_NAME -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+            echo "Clean up"
+            sudo docker system prune -af
 
