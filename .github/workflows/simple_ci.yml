@@ -41,6 +41,7 @@ jobs:
   deploy:
     name: Deploy to Amazon EC2
     needs: test
+    steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
         with:
