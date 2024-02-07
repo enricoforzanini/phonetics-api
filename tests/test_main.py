@@ -21,7 +21,7 @@ def test_translate_word_not_found():
 def test_valid_translation():
     response = client.get("/translate/fr/abdominales")
     assert response.status_code == 200
-    assert response.json() == {"language": "fr", "word": "abdominales", "ipa_translation": "/ab.dɔ.mi.nal/"}
+    assert response.json() == {"language": "fr", "word": "abdominales", "ipa_translation": "ab.dɔ.mi.nal"}
 
 
     
