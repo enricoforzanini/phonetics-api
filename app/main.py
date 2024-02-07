@@ -1,10 +1,13 @@
 from contextlib import asynccontextmanager
+import sys
+import sqlite3
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
+from slowapi.errors import RateLimitExceeded
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 from app import data_loader
-import sys
-import sqlite3
 
 DATABASE = 'data.db'
 
@@ -14,10 +17,13 @@ logger.add(sys.stdout, format="{time} {level} {message}")
 
 data_loader.download_data()
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="Phonetics API",
     summary="Phonetics API to get the IPA translation of words in different languages.",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app = FastAPI()
 
@@ -58,7 +64,8 @@ def convert_to_ipa(language, word):
         return None
 
 @app.get("/")
-def read_root():
+@limiter.limit("10/minute")
+def read_root(request: Request):
     return {
         "message": "Welcome to the Phonetics API",
         "endpoints": {
@@ -77,8 +84,9 @@ def read_root():
     }
 
 @app.get("/translate/{language}/{word}")
-def translate_text(language: str, word: str):
-    available_languages = get_supported_languages()['languages']    
+@limiter.limit("5/minute")
+def translate_text(language: str, word: str, request: Request):
+    available_languages = get_supported_languages(request)['languages']    
     if language not in available_languages:
         raise HTTPException(status_code=404, detail="Language not available")
 
@@ -89,7 +97,8 @@ def translate_text(language: str, word: str):
     return {"language": language, "word": word, "ipa_translation": ipa_translation}
 
 @app.get("/languages")
-def get_supported_languages():
+@limiter.limit("5/minute")
+def get_supported_languages(request: Request):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute("SELECT DISTINCT language FROM translations")
@@ -98,5 +107,6 @@ def get_supported_languages():
     return {"languages": languages}
 
 @app.get("/{path:path}")
-def catch_all(path: str):
+@limiter.limit("10/minute")
+def catch_all(path: str, request: Request):
     raise HTTPException(status_code=404, detail="Endpoint not found. Please check the URL.")
