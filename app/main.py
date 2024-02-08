@@ -1,15 +1,29 @@
 from contextlib import asynccontextmanager
 import sys
-import sqlite3
+import aiosqlite
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
+from typing import List
+from pydantic import BaseModel
 from app import data_loader
 
 DATABASE = 'data.db'
+
+class TranslateRequest(BaseModel):
+    language: str
+    words: List[str]
+
+class TranslationItem(BaseModel):
+    word: str
+    ipa_translation: str
+    error: str = None
+
+class TranslateResponse(BaseModel):
+    translations: List[TranslationItem]
 
 logger.remove()
 logger.level("INFO")
@@ -49,18 +63,15 @@ async def log_http_exceptions(request: Request, exception: HTTPException):
     logger.error(f"HTTP error: {exception.detail}")
     return JSONResponse(status_code=exception.status_code, content={"detail": exception.detail})
 
-def convert_to_ipa(language, word):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT ipa_translation FROM translations WHERE word = ? AND language = ?", (word, language))
-    translation = c.fetchone()
+async def convert_to_ipa(language, word):
+    async with aiosqlite.connect(DATABASE) as db:
+        c = await db.execute("SELECT ipa_translation FROM translations WHERE word = ? AND language = ?", (word, language))
+        translation = await c.fetchone()
+        await c.close()
     if translation:
-        logger.info(f"Translation found for {language}/{word}: {translation[0]}")
-        conn.close()
         return translation[0]
     else:
         logger.warning(f"No translation found for {language}/{word}")
-        conn.close()
         return None
 
 @app.get("/")
@@ -85,12 +96,13 @@ def read_root(request: Request):
 
 @app.get("/translate/{language}/{word}")
 @limiter.limit("5/minute")
-def translate_text(language: str, word: str, request: Request):
-    available_languages = get_supported_languages(request)['languages']    
+async def translate_text(language: str, word: str, request: Request):
+    result = await get_supported_languages(request)
+    available_languages = result['languages']
     if language not in available_languages:
         raise HTTPException(status_code=404, detail="Language not available")
 
-    ipa_translation = convert_to_ipa(language, word)
+    ipa_translation = await convert_to_ipa(language, word)
     if ipa_translation is None:
         raise HTTPException(status_code=404, detail="Translation not found")
 
@@ -98,12 +110,12 @@ def translate_text(language: str, word: str, request: Request):
 
 @app.get("/languages")
 @limiter.limit("5/minute")
-def get_supported_languages(request: Request):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT DISTINCT language FROM translations")
-    languages = [language[0] for language in c.fetchall()]
-    conn.close()
+async def get_supported_languages(request: Request):
+    async with aiosqlite.connect(DATABASE) as db:
+        c = await db.execute("SELECT DISTINCT language FROM translations")
+        rows = await c.fetchall()
+        languages = [language[0] for language in rows]
+        await c.close()
     return {"languages": languages}
 
 @app.get("/{path:path}")

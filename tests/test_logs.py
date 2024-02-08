@@ -18,7 +18,5 @@ def caplog(caplog: LogCaptureFixture):
 
 def test_translation_logging(caplog):
     client = TestClient(main.app)
-    client.get("/translate/fr/famille")
-    assert "Translation found for fr/famille" in caplog.text
     client.get("/translate/fr/inexistantwordinfrench")
     assert "No translation found for fr/inexistantwordinfrench" in caplog.text
