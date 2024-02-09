@@ -8,28 +8,18 @@ from loguru import logger
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
-from typing import List, Optional
-from pydantic import BaseModel
+from app.models import TranslateRequest, TranslationItem, TranslateResponse
 from app import data_loader
 
 DATABASE = 'data.db'
 
 allowed_origins = [
     "http://localhost:3000",
-    "https://enricoforzanini.github.io/",
+    "http://localhost:8080",
+    "http://localhost"
 ]
 
-class TranslateRequest(BaseModel):
-    language: str
-    words: List[str]
 
-class TranslationItem(BaseModel):
-    word: str
-    ipa_translation: Optional[str] = None
-    error: Optional[str] = None
-
-class TranslateResponse(BaseModel):
-    translations: List[TranslationItem]
 
 logger.remove()
 logger.level("INFO")
