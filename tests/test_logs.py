@@ -4,6 +4,11 @@ from _pytest.logging import LogCaptureFixture
 from fastapi.testclient import TestClient
 from app import main
 
+@pytest.fixture
+def client():
+    with TestClient(main.app) as c:
+        yield c
+
 @pytest.fixture # from https://loguru.readthedocs.io/en/stable/resources/migration.html#replacing-caplog-fixture-from-pytest-library
 def caplog(caplog: LogCaptureFixture):
     handler_id = logger.add(
@@ -16,8 +21,7 @@ def caplog(caplog: LogCaptureFixture):
     yield caplog
     logger.remove(handler_id)
 
-def test_translation_logging(caplog):
-    client = TestClient(main.app)
+def test_translation_logging(caplog, client):
     data = {
         "language": "fr",
         "words": ["inexistantwordinfrench"]

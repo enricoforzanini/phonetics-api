@@ -82,7 +82,9 @@ jobs:
               --log-opt awslogs-region=${AWS_REGION} \
               --log-opt awslogs-group=log-phonetics \
               --log-opt awslogs-create-group=true \
-              --name $CONTAINER_NAME -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+              --name $CONTAINER_NAME \
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
             echo "Clean up"
             sudo docker system prune -af
 

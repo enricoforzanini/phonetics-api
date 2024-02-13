@@ -25,3 +25,9 @@ class TranslateResponse(BaseModel):
         ...,
         description='List of translation items'
     )
+
+class SupportedLanguagesResponse(BaseModel):
+    languages: List[str] = Field(
+        ...,
+        description='List of supported ISO 639-1 language codes'
+    )
