@@ -1,6 +1,6 @@
 # phonetics-api
 
-The Phonetics API is a personal project designed to provide International Phonetic Alphabet (IPA) translations for words in multiple languages. The data used has been scraped from [wiktionary](https://www.wiktionary.org/) XML data dumps.
+The Phonetics API is a personal project designed to provide International Phonetic Alphabet (IPA) translations for words in multiple languages. The data used has been scraped from [wiktionary](https://www.wiktionary.org/) XML data dumps. Check the docs: [Swagger UI](http://13.49.60.103/docs) or [ReDoc](http://13.49.60.103/redoc).
 
 ## Overview
 
