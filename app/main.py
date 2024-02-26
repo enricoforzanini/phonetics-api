@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 import sys
+import traceback
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -65,6 +67,22 @@ async def log_http_exceptions(request: Request, exception: HTTPException):
     logger.error(f"HTTP error: {exception.detail}")
     return JSONResponse(status_code=exception.status_code, content={"detail": exception.detail})
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error: {exc}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": exc.body}
+    )
+
+@app.exception_handler(Exception)
+async def all_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error"}
+    )
+
 @app.get("/")
 @limiter.limit("10/minute")
 def read_root(request: Request):
@@ -77,16 +95,61 @@ def read_root(request: Request):
                 "path": f"{base_url}/translate",
                 "method": "POST",
                 "description": "Translates words to IPA. Accepts JSON with language and a list of words.",
-                "example_request": {
-                    "language": "fr",
-                    "words": ["salut", "monde"]
+                
+                "example": {
+                    "request": {
+                        "url": f"{base_url}/translate",
+                        "method": "POST",
+                        "headers": {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        "body": {
+                            "language": "fr",
+                            "words": ["salut", "monde"]
+                        }
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "translations": [
+                                {
+                                    "word": "salut",
+                                    "ipa_translation": "sa.ly",
+                                    "error": None
+                                },
+                                {
+                                    "word": "monde",
+                                    "ipa_translation": "mɔ̃d",
+                                    "error": None
+                                }
+                            ]
+                        }
+                    }
                 }
             },
             {
                 "name": "Translate a single word",
                 "path": base_url + "/translate/{language}/{word}",
                 "method": "GET",
-                "description": "Translates a single word IPA. Requires language and word as path parameters."
+                "description": "Translates a single word IPA. Requires language and word as path parameters.",
+                "example": {
+                    "request": {
+                        "url": base_url + "/translate/fr/bonjour",
+                        "method": "GET",
+                        "headers": {
+                            "Accept": "application/json"
+                        }
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "word": "bonjour",
+                            "ipa_translation": "bɔ̃.ʒuʁ",
+                            "error": None
+                        }
+                    }
+                }
             },
             {
                 "name": "Supported Languages",
