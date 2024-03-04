@@ -1,6 +1,6 @@
 # phonetics-api
 
-The Phonetics API is a personal project designed to provide International Phonetic Alphabet (IPA) translations for words in multiple languages. The data used has been scraped from [wiktionary](https://www.wiktionary.org/) XML data dumps. Check the docs: [Swagger UI](http://13.49.60.103/docs) or [ReDoc](http://13.49.60.103/redoc).
+The Phonetics API is a personal project designed to provide International Phonetic Alphabet (IPA) translations for words in multiple languages. The data used has been scraped from [wiktionary](https://www.wiktionary.org/) XML data dumps. Check the docs: [Swagger UI](https://13.49.60.103.nip.io/docs) or [ReDoc](https://13.49.60.103.nip.io/redoc).
 
 ## Overview
 
@@ -18,11 +18,11 @@ This endpoint translates a single word provided as a URL parameter with its lang
 
 ```bash
 curl -X 'GET' \
-  'http://13.49.60.103/translate/fr/bonjour' \
+  'https://13.49.60.103.nip.io/translate/fr/bonjour' \
   -H 'accept: application/json'
 ```
 
-Or go to http://13.49.60.103/translate/fr/bonjour directly.
+Or go to https://13.49.60.103.nip.io/translate/fr/bonjour directly.
 
 ### Translate multiple words (POST `/translate`)
 
@@ -30,7 +30,7 @@ This endpoint accepts JSON data with a language code and the list of words to be
 
 ```bash
 curl -X 'POST' \
-  'http://13.49.60.103/translate' \
+  'https://13.49.60.103.nip.io/translate' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{"language": "fr", "words": ["bonjour", "monde"]}'
@@ -42,8 +42,8 @@ This endpoint lists all the languages supported for translation.
 
 ```bash
 curl -X 'GET' \
-  'http://13.49.60.103/languages' \
+  'https://13.49.60.103.nip.io/languages' \
   -H 'accept: application/json'
 ```
-Or go to http://13.49.60.103/languages directly.
+Or go to https://13.49.60.103.nip.io/languages directly.
 

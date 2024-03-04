@@ -75,16 +75,19 @@ jobs:
             echo "Stopping existing container..."
             sudo docker stop $CONTAINER_NAME || true
             sudo docker rm $CONTAINER_NAME || true
+            echo " Creating Network"
+            sudo docker network create --driver bridge custom_network || true
             echo "Running new container..."
             echo ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
             sudo docker run -d \
+              --network=custom_network \
               --log-driver=awslogs \
               --log-opt awslogs-region=${AWS_REGION} \
               --log-opt awslogs-group=log-phonetics \
               --log-opt awslogs-create-group=true \
               --name $CONTAINER_NAME \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-              -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+              -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
             echo "Clean up"
             sudo docker system prune -af
 
