@@ -11,7 +11,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from app.database import fetch_supported_languages
 from app import data_loader
-from app.routers import translation, languages
+from app.routers import translation, languages, homepage
+from fastapi.staticfiles import StaticFiles
 
 allowed_origins = [
     "http://localhost:3000",
@@ -30,9 +31,10 @@ app = FastAPI(
 )
 app.include_router(translation.router)
 app.include_router(languages.router)
+app.include_router(homepage.router)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,

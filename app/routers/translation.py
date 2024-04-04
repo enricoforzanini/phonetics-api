@@ -5,6 +5,24 @@ from ..config import limiter
 
 router = APIRouter()
 
+exceptions = {
+    'c': 's',
+    'd': 'd',
+    'j': 'ʒ',
+    'l': 'l',
+    'm': 'm',
+    'n': 'n',
+    's': 's',
+    't': 't',
+    'y': 'i',
+    'ajourd': 'o.ʒuʁ.d',
+    'est': 'ɛ',
+    'lorsq': 'lɔʁ.k',
+    'qu': 'k',
+    'quelq': 'kɛlk',
+    'puisqu': 'pɥisk'
+}
+
 @router.post("/translate", response_model=TranslateResponse)
 @limiter.limit("5/minute")
 async def translate_text(request: Request, translate_request: TranslateRequest, db=Depends(get_db)):
@@ -16,7 +34,13 @@ async def translate_text(request: Request, translate_request: TranslateRequest, 
 
     translations = []
     for word in translate_request.words:
-        translation = await fetch_ipa_translation(translate_request.language, word.lower(), db)
+        word = word.lower()
+        if word == "":
+            continue
+        if word in exceptions:
+            translations.append(TranslationItem(word=word, ipa_translation=exceptions[word]))
+            continue
+        translation = await fetch_ipa_translation(translate_request.language, word, db)
         if translation:
             translations.append(TranslationItem(word=word, ipa_translation=translation))
         else:
