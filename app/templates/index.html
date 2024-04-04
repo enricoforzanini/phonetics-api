@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css?family=Raleway|Vidaloka" rel="stylesheet">
+        <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+        <title>IPA Transcription</title>
+   
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="header">
+                <h1>French to IPA</h1>
+                <p>
+                    API documentation: <a href="https://13.49.60.103.nip.io/docs" target="_blank">Swagger UI</a>
+                    or <a href="https://13.49.60.103.nip.io/redoc" target="_blank">ReDoc</a>
+                </p>
+            </div>
+            <div class="input-area">
+                <h3>Original</h3>
+                <textarea id="wordsInput" form="translationForm" placeholder="Enter words here..."></textarea>
+                <form id="translationForm">
+                    <button type="submit">Translate</button>
+                </form>
+                
+            </div>
+            <div class="output-area">
+                <h3>Transcription</h3>
+                <div class="translation-area box">
+                    <span id="ipaTranslation"></span>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('translationForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const wordsInput = document.getElementById('wordsInput').value;
+                const ipaTranslationElement = document.getElementById('ipaTranslation');
+
+                ipaTranslationElement.textContent = '';
+
+                if (wordsInput.trim()) {
+                    const tokens = wordsInput.match(/[\wàâäéèêëîïôöùûüÿçœÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇŒ]+|['-]|[^\wàâäéèêëîïôöùûüÿçœÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇŒ'-\s]+|\s+/g);
+
+                    const wordsForTranslation = tokens.filter(token => token.match(/^[\wàâäéèêëîïôöùûüÿçœÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇŒ]+$/))
+                        .map(word => word);
+
+                    const requestBody = JSON.stringify({
+                        words: wordsForTranslation,
+                        language: 'fr'
+                    });
+
+                    const response = await fetch('/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: requestBody
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        let translationsMap = new Map();
+                        data.translations.forEach((translation, i) => {
+                            translationsMap.set(wordsForTranslation[i], translation.ipa_translation || '?');
+                        });
+
+                        let result = tokens.map(token => translationsMap.get(token) || token).join('');
+
+                        ipaTranslationElement.textContent = result;
+                    } else {
+                        ipaTranslationElement.textContent = 'Error translating words.';
+                    }
+                }
+            });
+        </script>
+    </body>
+    </html>

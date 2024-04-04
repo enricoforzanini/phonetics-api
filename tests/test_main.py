@@ -30,7 +30,7 @@ def test_valid_translation_one_word(client):
     assert response.status_code == 200
     assert response.json() == {
         "translations": [
-            {"word": "abdominales", "ipa_translation": "ab.dɔ.mi.nal", "error": None}
+            {"word": "abdominales", "ipa_translation": "abdɔminal", "error": None}
         ]
     }
 
@@ -43,8 +43,8 @@ def test_valid_translation_two_words(client):
     assert response.status_code == 200
     assert response.json() == {
         "translations": [
-            {"word": "abdominales", "ipa_translation": "ab.dɔ.mi.nal", "error": None},
-            {"word": "musculaires", "ipa_translation": "mys.ky.lɛʁ", "error": None}
+            {"word": "abdominales", "ipa_translation": "abdɔminal", "error": None},
+            {"word": "musculaires", "ipa_translation": "myskylɛʁ", "error": None}
         ]
     }
 
@@ -57,7 +57,7 @@ def test_translation_one_error(client):
     assert response.status_code == 200
     assert response.json() == {
         "translations": [
-            {"word": "abdominales", "ipa_translation": "ab.dɔ.mi.nal", "error": None},
+            {"word": "abdominales", "ipa_translation": "abdɔminal", "error": None},
             {"word": "nonexistentword", "ipa_translation": None, "error": "Translation not found"}
         ]
     }
@@ -75,7 +75,7 @@ def test_get_translate_word_not_found(client):
 def test_get_valid_translation(client):
     response = client.get("/translate/fr/abdominales")
     assert response.status_code == 200
-    assert response.json() == {"word": "abdominales", "ipa_translation": "ab.dɔ.mi.nal", "error": None}
+    assert response.json() == {"word": "abdominales", "ipa_translation": "abdɔminal", "error": None}
 
 def test_supported_languages(client):
     response = client.get("/languages")

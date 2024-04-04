@@ -19,6 +19,6 @@ async def fetch_ipa_translation(language: str, word: str, db=Depends(get_db)) ->
     async with db.execute(query, (word, language)) as cursor:
         translation = await cursor.fetchone()
     if translation:
-        return translation[0]
+        return translation[0].replace(".", '')
     logger.warning(f"No translation found for {language}/{word}")
     return None
