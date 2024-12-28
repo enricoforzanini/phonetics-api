@@ -1,5 +1,7 @@
 # phonetics-api
 
+**Note: this project is no longer deployed, the previous version at https://13.49.60.103.nip.io/homepage is no longer active.
+
 The Phonetics API is a personal project designed to provide International Phonetic Alphabet (IPA) translations for words in multiple languages. The data used has been scraped from [wiktionary](https://www.wiktionary.org/) XML data dumps. Check the docs: [Swagger UI](https://13.49.60.103.nip.io/docs) or [ReDoc](https://13.49.60.103.nip.io/redoc). Test the API with a simple frontend at https://13.49.60.103.nip.io/homepage (for French only).
 
 ## Overview
